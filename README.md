@@ -97,3 +97,55 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Research Notebook CLI — v0.2.0
+
+Python 3.10+，仅使用标准库，不需要安装依赖、API 密钥或联网。下载 research.py 后，在自己的本地工作目录运行：
+
+```sh
+python research.py --db demo.sqlite add "Fictional Example" --body "Initial hypothesis" --tags demo,software
+python research.py --db demo.sqlite list --query Fictional --tag demo
+python research.py --db demo.sqlite edit 1 --body "Revised hypothesis"
+python research.py --db demo.sqlite history 1
+python research.py --db demo.sqlite diff 1 1 2
+python research.py --db demo.sqlite evidence 1 --claim "Synthetic claim" --source https://example.com/report --date 2026-10-23 --kind inference --falsifier "Counterexample"
+python research.py --db demo.sqlite show 1
+python research.py --db demo.sqlite export notebook.json --format json
+python research.py --db demo.sqlite export notebook.csv --format csv
+python research.py --db demo.sqlite export notebook.md --format md
+python research.py --db imported.sqlite import notebook.json
+python research.py selftest
+```
+
+### 能力与数据规则
+
+- SQLite 本地保存笔记，支持中文搜索和规范化标签。
+- 每次实质修改保留版本；无变化的保存不产生新版本。
+- 证据记录区分 fact、inference、unknown，要求有效来源链接和披露日期，可记录反证条件。
+- JSON 导入保留正文、标签和证据，为每条笔记分配新 ID；一次导入失败会整体回滚。重复导入会创建副本。
+- 导出快照不包含修改历史；Markdown 保留证据，CSV 是笔记摘要，JSON 可重新导入。
+- CSV 对可能被表格软件识别为公式的文本做前缀转义；不要把 CSV 当作无损备份格式。
+- 导出拒绝覆盖已有文件或数据库。数据库没有加密，请保存在受保护的本地目录。
+- 笔记的版本历史目前覆盖标题、正文、标签；证据采用追加记录，不纳入正文版本对比。
+- 程序不会主动访问来源网址、获取行情、上传笔记或执行交易。导出内容可能含你自行输入的隐私，应自行审阅后再分享。
+
+### 情景计算
+
+```sh
+python research.py scenario --cash-flow 100 --growth 0.03 --discount 0.10 --terminal-growth 0.02 --years 5
+```
+
+输入为最近一期现金流和小数形式的增长、折现率。未来第 t 年现金流为 CF0 × (1+g)^t，逐期折现；终值使用最后一期现金流 × (1+终期增长率)/(折现率−终期增长率)，再折现到今天。输出分开列示显性期现值、终值现值及终值占比。
+
+使用不同假设分别运行，即可比较保守、基准和乐观情景。金额单位与输入相同，不是每股目标价；模型未计债务、股数变化、税收或概率权重。折现率必须大于终期增长率，程序拒绝非有限输入。
+
+### 验证
+
+`python research.py selftest` 包含 11 项自动测试，覆盖中文搜索、版本差异、无效证据、导入回滚、已知现金流计算结果、非法假设和 CSV 公式转义。另已验证新增→修改→证据→导出→导入的命令行流程。
+
+### 更新日志
+
+- 2026-10-23 / v0.2.0：加入可运行的本地研究笔记工具、证据追踪、现金流情景计算、三种导出与 JSON 导入，补充自动测试与隐私文件忽略规则。
+- 2026-10-23 / 初始版：发布研究问题清单和空白备忘录模板。
+
+当前是早期版本，尚无外部采用量或长期运行记录。后续改进将由实际问题与可复现反馈驱动。
