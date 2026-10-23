@@ -1,0 +1,14 @@
+# Keep local notebooks, exports, credentials, and runtime files private.
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+.env
+.env.*
+*.pem
+*.key
+__pycache__/
+*.pyc
+exports/
+private/
+research-exports/
